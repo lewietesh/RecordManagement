@@ -22,7 +22,7 @@ function getDataFromLocalStorage() {
 
 // Render Profile Data Table
 function renderProfileTable(profiles) {
-    const profileTableBody = document.querySelector('table:nth-of-type(1) tbody');
+    const profileTableBody = document.querySelector('#profileTable tbody');
     profileTableBody.innerHTML = '';
 
     profiles.forEach((profile, index) => {
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderProfileTable(profiles);
     renderHandlerTable(handlers);
 
-    console.log(profileData);
-    console.log(profileHandlers);
-
+    // Updated logging
+    console.log("Profiles Loaded:", profiles);
+    console.log("Handlers Loaded:", handlers);
 });

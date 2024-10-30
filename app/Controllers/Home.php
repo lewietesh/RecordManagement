@@ -4,70 +4,113 @@ namespace App\Controllers;
 use App\Models\ProfileModel;
 use App\Models\ProfileHandlerModel;
 
-
 class Home extends BaseController
 {
-
-    protected $profileModel ;
+    protected $profileModel;
     protected $profileHandlerModel;
-
 
     public function __construct()
     {
-         helper(['session']); // Load session helper
-
-        // Initialize the service model in the constructor
+        helper(['session', 'url']); // Load session and URL helpers
         $this->profileModel = new ProfileModel();
-
-        $this->profileHandlerModel =  new ProfileHandlerModel();
+        $this->profileHandlerModel = new ProfileHandlerModel();
     }
+
     public function index()
     {
         $profiledata = $this->profileModel->asArray()->findAll();
-
         $profilehandlers = $this->profileHandlerModel->asArray()->findAll();
-
-
-        $data = array("profiledata" => $profiledata, "profilehandlers" => $profilehandlers,);
-
+        $data = [
+            "profiledata" => $profiledata,
+            "profilehandlers" => $profilehandlers,
+        ];
 
         return view('home', $data);
     }
 
-    public function saveprofile()
+    public function editProfile($id)
     {
-        // Load the ProfileModel
-        $profileModel = new ProfileModel();
-        
+        $profile = $this->request->getPost('id');
 
-        // Validate form data (optional, add rules as per your requirements)
-        $validation = \Config\Services::validation();
+        // echo ($profile);
 
-        // Get the form data
-        $data = [
-            'PROFILE_NAME'     => $this->request->getPost('profile_name'),
-            'PROFILE_ADMIN'    => $this->request->getPost('profile_owner'),
-            'PROFILE_HANDLER'  => $this->request->getPost('writer'),
-            'INSTITUTION'      => $this->request->getPost('institution'),
-            // Add any other fields you need to save
-        ];
+        if ($profile) {
+            $data = [
+                'ID' => $this->request->getPost('id'),
+                'PROFILE_NAME' => $this->request->getPost('profile_name'),
+                'PROFILE_ADMIN' => $this->request->getPost('profile_owner'),
+                'PROFILE_HANDLER' => $this->request->getPost('writer'),
+                'INSTITUTION' => $this->request->getPost('institution'),
+                'MAJOR' => $this->request->getPost('major'),
+                'TOTAL_COURSES' => $this->request->getPost('courses'),
+                'GENDER' => $this->request->getPost('gender'),
+                'STATUS' => $this->request->getPost('status'),
+            ];
 
-        $validation->setRules([
-            'PROFILE_NAME'    => 'required',
-            'PROFILE_ADMIN'   => 'required',
-            'PROFILE_HANDLER' => 'required',
-            'INSTITUTION'     => 'required',
+            // Attempt to update the profile
+            if ($this->profileModel->update($profile, $data)) {
+                return redirect()->to('/')->with('success', 'Profile updated successfully.');
+            } else {
+                // If update fails, provide error feedback
+                return redirect()->back()->with('error', 'Failed to update profile. Please try again.');
+            }
+
+
+        }
+
+        return redirect()->to('/')->with('error', 'Profile not found.');
+    }
+    public function deleteProfile()
+    {
+        // Get the profile ID from the POST data
+        $id = $this->request->getPost('id');
+
+        // Check if the profile exists before attempting to delete
+        if ($this->profileModel->where('ID', $id)->delete()) {
+            return redirect()->to('/')->with('success', 'Profile deleted successfully.');
+        }
+
+        // If profile not found, redirect with an error message
+        return redirect()->to('/')->with('error', 'Profile not found.');
+
+    }
+
+    public function saveProfile()
+    {
+        // Validate incoming request
+        $validation = $this->validate([
+            'profile_name' => 'required',
+            'profile_owner' => 'required',
+            'writer' => 'required',
+            'institution' => 'required',
+            'major' => 'required',
+            'gender' => 'required|in_list[0,1]',
+            'status' => 'required|in_list[Active,Inactive,Terminated]',
         ]);
 
-        if ($validation->run($data)) {
-            // Save the data to the database
-            $profileModel->save($data);
+        if (!$validation) {
+            // Validation failed, redirect with input and errors
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
 
-            // Set success message and redirect
-            return redirect()->back()->with('success', 'Profile added successfully.');
+        // Collect form data
+        $data = [
+            'PROFILE_NAME' => $this->request->getPost('profile_name'),
+            'PROFILE_ADMIN' => $this->request->getPost('profile_owner'),
+            'PROFILE_HANDLER' => $this->request->getPost('writer'),
+            'INSTITUTION' => $this->request->getPost('institution'),
+            'MAJOR' => $this->request->getPost('major'),
+            'TOTAL_COURSES' => $this->request->getPost('courses'),
+            'GENDER' => $this->request->getPost('gender'),
+            'STATUS' => $this->request->getPost('status'),
+        ];
+
+        // Save data using the model
+        if ($this->profileModel->save($data)) {
+            return redirect()->to('/')->with('success', 'Profile saved successfully.');
         } else {
-            // Validation failed, show errors
-            return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+            return redirect()->to('/')->with('error', 'Failed to save profile. Please try again.');
         }
     }
+
 }

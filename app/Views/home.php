@@ -34,28 +34,35 @@
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="#">Home</a>
                         </li>
-                    </ul>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="<?php echo base_url('settings')?>">Settings</a>
+                        </li>
 
-                    </a>
+
+                    </ul>
+       <div>
+       <a class="btn btn-warning" href="<?php echo base_url('logout')?>"> Logout</a>
+
+       </div>
                 </div>
             </div>
         </nav>
     </header>
 
     <div class="hero">
-    <?php if(session()->getFlashdata('success')): ?>
-    <div class="alert alert-success">
-        <?= session()->getFlashdata('success'); ?>
-    </div>
-<?php endif; ?>
+        <?php if (session()->getFlashdata('success')): ?>
+            <div class="alert alert-success">
+                <?= session()->getFlashdata('success'); ?>
+            </div>
+        <?php endif; ?>
 
-<?php if(session()->getFlashdata('errors')): ?>
-    <div class="alert alert-danger">
-        <?php foreach(session()->getFlashdata('errors') as $error): ?>
-            <p><?= $error; ?></p>
-        <?php endforeach; ?>
-    </div>
-<?php endif; ?>
+        <?php if (session()->getFlashdata('errors')): ?>
+            <div class="alert alert-danger">
+                <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                    <p><?= $error; ?></p>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
 
     </div>
     <div class="container p-2">
@@ -115,27 +122,35 @@
                 </tr>
             </thead>
             <tbody>
-                <?php
+                <?php foreach ($profiledata as $index => $profile): ?>
+                    <tr class="text-dark">
+                        <th scope='row'><?= $index + 1 ?></th>
+                        <td><?= esc($profile['PROFILE_NAME']) ?></td>
+                        <td><?= esc($profile['PROFILE_ADMIN']) ?></td>
+                        <td><?= esc($profile['PROFILE_HANDLER']) ?></td>
+                        <td><?= esc($profile['INSTITUTION']) ?></td>
+                        <td><?= esc($profile['TOTAL_COURSES']) ?></td>
+                        <td><?= esc($profile['MAJOR']) ?></td>
+                        <td><?= esc($profile['GENDER']) ?></td>
+                        <td><?= esc($profile['STATUS']) ?></td>
+                        <td>
+                            <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
+                                data-bs-target="#editModal" data-id="${profile.ID}" data-name="${profile.PROFILE_NAME}"
+                                data-admin="${profile.PROFILE_ADMIN}" data-handler="${profile.PROFILE_HANDLER}"
+                                data-institution="${profile.INSTITUTION}" data-major="${profile.MAJOR}"
+                                data-gender="${profile.GENDER}" data-status="${profile.STATUS}">
+                                <i class="fa fa-edit" aria-hidden="true"></i> Edit
+                            </button>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                data-bs-target="#deleteModal" data-id="${profile.ID}" data-name="${profile.PROFILE_NAME}">
+                                <i class="fa fa-trash" aria-hidden="true"></i> Delete
+                            </button>
+                        </td>
 
-                foreach ($profiledata as $index => $profile) {
-                    echo "<tr>";
-                    echo "<th scope='row'>" . ($index + 1) . "</th>";
-                    echo "<td>" . $profile['PROFILE_NAME'] . "</td>";
-                    echo "<td>" . $profile['PROFILE_ADMIN'] . "</td>";
-                    echo "<td>" . $profile['PROFILE_HANDLER'] . "</td>";
-                    echo "<td>" . $profile['INSTITUTION'] . "</td>";
-                    echo "<td>" . $profile['TOTAL_COURSES'] . "</td>";
-                    echo "<td>" . $profile['MAJOR'] . "</td>";
-                    echo "<td>" . $profile['GENDER'] . "</td>";
-                    echo "<td>" . $profile['STATUS'] . "</td>";
-
-                    echo "<td>" . "</td>";
-
-                    echo "</tr>";
-                }
-                ?>
-
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
+
         </table>
 
         <div id="pagination" class="d-flex justify-content-center">
@@ -160,7 +175,6 @@
                 </thead>
                 <tbody>
                     <?php
-
 
                     foreach ($profilehandlers as $index => $profile) {
                         echo "<tr>";
@@ -200,15 +214,148 @@
                             <label for="exampleInputPassword1" class="form-label">Admin</label>
                             <input type="text" name="profile_owner" class="form-control">
                         </div>
+
                         <div class="mb-3">
                             <label for="exampleInputPassword1" class="form-label">Writer</label>
                             <input type="text" name="writer" class="form-control">
                         </div>
+
                         <div class="mb-3">
                             <label for="exampleInputPassword1" class="form-label">Institution</label>
                             <input type="text" name="institution" class="form-control">
                         </div>
+
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">Courses</label>
+                            <input type="number" name="courses" class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">Major</label>
+                            <input type="text" name="major" class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <select name="gender" class="form-select" aria-label="Default select example">
+                                <option selected>Gender</option>
+                                <option value="1">Male</option>
+                                <option value="0">Female</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">Status</label>
+                            <select class="form-select" name="status" aria-label="Default select example">
+                                <option selected>Status</option>
+                                <option value="Active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="Terminated">Terminated</option>
+                            </select>
+                        </div>
+
                         <button type="submit" class="btn btn-primary">Submit</button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DELETE DATA MODAL -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete the profile?
+                </div>
+
+                <div class="modal-footer">
+                    <form id="deleteForm" method="post" enctype="multipart/form-data"
+                        action="<?= base_url('deleteprofile'); ?>">
+                        <input type="hidden" name="id" id="deleteId">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Edit Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Example of the Edit Profile Form -->
+                    <form id="editForm" action="<?= base_url('editprofile/' . $profile['ID']); ?>" method="post" enctype="multipart/form-data">
+
+                        <input type="hidden" name="id" id="editId"
+                            value="<?= isset($profile['ID']) ? esc($profile['ID']) : '' ?>">
+
+                        <div class="mb-3">
+                            <label for="editName" class="form-label">Name</label>
+                            <input type="text" name="profile_name" class="form-control" id="editName"
+                                value="<?= isset($profile['PROFILE_NAME']) ? esc($profile['PROFILE_NAME']) : '' ?>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editAdmin" class="form-label">Admin</label>
+                            <input type="text"  name="profile_owner" class="form-control" id="editAdmin"
+                                value="<?= isset($profile['PROFILE_ADMIN']) ? esc($profile['PROFILE_ADMIN']) : '' ?>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editHandler" class="form-label">Writer</label>
+                            <input type="text" name="writer" class="form-control" id="editHandler"
+                                value="<?= isset($profile['PROFILE_HANDLER']) ? esc($profile['PROFILE_HANDLER']) : '' ?>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editInstitution" class="form-label">Institution</label>
+                            <input type="text" name="institution" class="form-control" id="editInstitution"
+                                value="<?= isset($profile['INSTITUTION']) ? esc($profile['INSTITUTION']) : '' ?>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editMajor" class="form-label">Major</label>
+                            <input type="text" name="major" class="form-control" id="editMajor"
+                                value="<?= isset($profile['MAJOR']) ? esc($profile['MAJOR']) : '' ?>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="exampleInputPassword1" class="form-label">Courses</label>
+                            <input type="number" name="courses" class="form-control" id="editCourses"
+                                value="<?= isset($profile['TOTAL_COURSES']) ? esc($profile['TOTAL_COURSES']) : '' ?>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editGender" class="form-label">Gender</label>
+                            <select name="gender" class="form-select" id="editGender">
+                                <option value="1" <?= isset($profile['GENDER']) && $profile['GENDER'] === '1' ? 'selected' : '' ?>>Male</option>
+                                <option value="0" <?= isset($profile['GENDER']) && $profile['GENDER'] === '0' ? 'selected' : '' ?>>Female</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editStatus" class="form-label">Status</label>
+                            <select name="status" class="form-select" id="editStatus">
+                                <option value="Active" <?= isset($profile['STATUS']) && $profile['STATUS'] === 'Active' ? 'selected' : '' ?>>Active</option>
+                                <option value="Inactive" <?= isset($profile['STATUS']) && $profile['STATUS'] === 'Inactive' ? 'selected' : '' ?>>Inactive</option>
+                                <option value="Terminated" <?= isset($profile['STATUS']) && $profile['STATUS'] === 'Terminated' ? 'selected' : '' ?>>Terminated</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save changes</button>
                     </form>
                 </div>
             </div>
@@ -216,11 +363,14 @@
     </div>
 
 
+
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
 
     <script src="<?php echo base_url('assets/js/main.js') ?>"></script>
 
@@ -255,12 +405,26 @@
                 <td>${profile.MAJOR}</td>
                 <td>${profile.GENDER}</td>
                 <td>${profile.STATUS}</td>
-                <td></td>
+                <td>  
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" 
+                        data-bs-target="#editModal" data-id="${profile.ID}" 
+                        data-name="${profile.PROFILE_NAME}" data-admin="${profile.PROFILE_ADMIN}" 
+                        data-handler="${profile.PROFILE_HANDLER}" data-institution="${profile.INSTITUTION}" 
+                        data-major="${profile.MAJOR}"  data-courses="${profile.TOTAL_COURSES}" data-gender="${profile.GENDER}" 
+                        data-status="${profile.STATUS}">
+                        <i class="fa fa-edit" aria-hidden="true"></i> Edit
+                    </button>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" 
+                        data-bs-target="#deleteModal" data-id="${profile.ID}">
+                        <i class="fa fa-trash" aria-hidden="true"></i> Delete
+                    </button>
+                </td>
             </tr>
         `;
                 tableBody.insertAdjacentHTML('beforeend', row);
             });
         }
+
 
         function renderPagination() {
             const paginationContainer = document.getElementById('pagination');
@@ -304,6 +468,87 @@
             renderPagination();
             updatePaginationButtons();
         });
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // Add click event listener to all edit buttons
+            document.querySelectorAll('[data-bs-target="#editModal"]').forEach(button => {
+                button.addEventListener('click', function () {
+                    // Create an object to store profile data from the button's data attributes
+                    const profileData = {
+                        id: this.getAttribute('data-id'),
+                        name: this.getAttribute('data-name'),
+                        admin: this.getAttribute('data-admin'),
+                        handler: this.getAttribute('data-handler'),
+                        institution: this.getAttribute('data-institution'),
+                        major: this.getAttribute('data-major'),
+                        courses: this.getAttribute('data-courses'),
+                        gender: this.getAttribute('data-gender'),
+                        status: this.getAttribute('data-status')
+                    };
+
+                    // Populate the modal fields using the profile data
+                    document.getElementById('editId').value = profileData.id;
+                    document.getElementById('editName').value = profileData.name;
+                    document.getElementById('editAdmin').value = profileData.admin;
+                    document.getElementById('editHandler').value = profileData.handler;
+                    document.getElementById('editInstitution').value = profileData.institution;
+                    document.getElementById('editMajor').value = profileData.major;
+                    document.getElementById('editCourses').value = profileData.courses;
+
+                    // Set the correct option for the gender select field
+                    const genderSelect = document.getElementById('editGender');
+                    genderSelect.value = profileData.gender;
+
+                    // Set the correct option for the status select field
+                    const statusSelect = document.getElementById('editStatus');
+                    statusSelect.value = profileData.status;
+                });
+            });
+
+
+            // 
+            document.addEventListener('click', function (event) {
+                if (event.target.closest('.btn-danger') && event.target.closest('[data-bs-target="#deleteModal"]')) {
+                    const button = event.target.closest('.btn-danger');
+
+                    const profileName = button.getAttribute('data-name');
+                    const profileId = button.getAttribute('data-id');
+
+                    const profileNameElement = document.getElementById('profileNameToDelete');
+                    const deleteIdElement = document.getElementById('deleteId');
+
+                    // Check if the elements exist before setting their properties
+                    if (profileNameElement) {
+                        profileNameElement.textContent = profileName;
+                    }
+
+                    if (deleteIdElement) {
+                        deleteIdElement.value = profileId;
+                    }
+                }
+            });
+
+
+            // Event delegation for dynamically added elements
+            document.addEventListener('click', function (event) {
+                if (event.target.closest('.btn-danger') && event.target.closest('[data-bs-target="#deleteModal"]')) {
+                    const button = event.target.closest('.btn-danger');
+
+                    // Retrieve the profile name and ID from data attributes
+                    const profileName = button.getAttribute('data-name');
+                    const profileId = button.getAttribute('data-id');
+
+                    // Populate the modal with the profile name and set the form action
+                    document.getElementById('profileNameToDelete').textContent = profileName;
+                    document.getElementById('deleteId').value = profileId;
+                }
+            });
+        });
+
+
+
     </script>
 </body>
 
